@@ -9,7 +9,7 @@ import java.util.*
 
 @Parcelize
 @Entity(tableName = "books")
-class Book(
+data class Book(
   @PrimaryKey
   val id: String = UUID.randomUUID().toString(),
   val name: String,

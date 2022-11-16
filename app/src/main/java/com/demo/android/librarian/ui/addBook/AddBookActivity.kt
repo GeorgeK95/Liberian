@@ -3,24 +3,19 @@ package com.demo.android.librarian.ui.addBook
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import com.demo.android.librarian.R
@@ -28,6 +23,10 @@ import com.demo.android.librarian.model.Book
 import com.demo.android.librarian.model.Genre
 import com.demo.android.librarian.model.state.AddBookState
 import com.demo.android.librarian.repository.LibrarianRepository
+import com.demo.android.librarian.ui.composeUi.ActionButton
+import com.demo.android.librarian.ui.composeUi.InputField
+import com.demo.android.librarian.ui.composeUi.SpinnerPicker
+import com.demo.android.librarian.ui.composeUi.TopBar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -35,7 +34,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class AddBookActivity : AppCompatActivity(), AddBookView {
 
-  private val _addBookState = MutableLiveData(AddBookState())
+  private val _addBookState = mutableStateOf(AddBookState())
   private val _genresState = MutableLiveData(emptyList<Genre>())
 
   @Inject
@@ -65,7 +64,12 @@ class AddBookActivity : AppCompatActivity(), AddBookView {
 
   @Composable
   fun AddBookTopBar() {
-    TopAppBar(
+    TopBar(
+      title = stringResource(id = R.string.add_book_title),
+      onBackPressed = { onBackPressed() }
+    )
+
+    /*TopAppBar(
       title = { Text(text = stringResource(id = R.string.add_book_title)) },
       navigationIcon = {
         IconButton(
@@ -75,27 +79,47 @@ class AddBookActivity : AppCompatActivity(), AddBookView {
       },
       contentColor = Color.White,
       backgroundColor = colorResource(id = R.color.colorPrimary)
-    )
+    )*/
   }
 
   @Composable
   fun AddBookFormContent() {
     val genres = _genresState.value ?: emptyList()
-    val isGenresPickerOpen = remember { mutableStateOf(false) }
+//    val isGenresPickerOpen = remember { mutableStateOf(false) }
     val bookNameState = remember { mutableStateOf("") }
     val bookDescState = remember { mutableStateOf("") }
     val selectedGenreName =
-      genres.firstOrNull { it.id == _addBookState.value?.genreId }?.name ?: "None"
+      genres.firstOrNull { it.id == _addBookState.value.genreId }?.name ?: "None"
+
+    val isButtonEnabled = derivedStateOf { (_addBookState.value.getError() == null) }
 
     Column(
       modifier = Modifier.fillMaxSize(),
       horizontalAlignment = Alignment.CenterHorizontally
     ) {
-      OutlinedTextField(
+      InputField(
+        value = bookNameState.value,
+        onStateChanged = {
+          bookNameState.value = it
+          _addBookState.value = _addBookState.value.copy(name = it)
+        },
+        label = stringResource(id = R.string.book_title_hint)
+      )
+
+      InputField(
+        value = bookDescState.value,
+        onStateChanged = {
+          bookDescState.value = it
+          _addBookState.value = _addBookState.value.copy(description = it)
+        },
+        label = stringResource(id = R.string.book_description_hint)
+      )
+
+      /*OutlinedTextField(
         value = bookNameState.value,
         onValueChange = {
           bookNameState.value = it
-          _addBookState.value = _addBookState.value?.copy(name = it)
+          _addBookState.value = _addBookState.value?.copy(description = it)
         },
         label = { Text(text = stringResource(id = R.string.book_title_hint)) }
       )
@@ -107,9 +131,18 @@ class AddBookActivity : AppCompatActivity(), AddBookView {
           _addBookState.value = _addBookState.value?.copy(description = it)
         },
         label = { Text(text = stringResource(id = R.string.book_description_hint)) }
+      )*/
+
+      SpinnerPicker(
+        pickerText = selectedGenreName,
+        items = genres,
+        itemToName = { currentGenre -> currentGenre.name },
+        onItemPicked = {
+          _addBookState.value = _addBookState.value.copy(genreId = it.id)
+        }
       )
 
-      Row {
+      /*Row {
         Text(
           text = "Selected genre: ",
           fontSize = 16.sp
@@ -121,6 +154,7 @@ class AddBookActivity : AppCompatActivity(), AddBookView {
           }),
           fontSize = 16.sp
         )
+
         DropdownMenu(
           expanded = isGenresPickerOpen.value,
           onDismissRequest = { isGenresPickerOpen.value = false },
@@ -134,11 +168,16 @@ class AddBookActivity : AppCompatActivity(), AddBookView {
             }
           }
         }
-      }
+      }*/
 
-      TextButton(onClick = { onAddBookTapped() }) {
+      ActionButton(
+        text = stringResource(id = R.string.add_book_button_text),
+        isEnabled = isButtonEnabled.value,
+        onClick = { onAddBookTapped() }
+      )
+      /*TextButton(onClick = { onAddBookTapped() }) {
         Text(text = stringResource(id = R.string.add_book_button_text))
-      }
+      }*/
     }
   }
 
@@ -160,6 +199,8 @@ class AddBookActivity : AppCompatActivity(), AddBookView {
 
         onBookAdded()
       }
+    } else {
+      Toast.makeText(this, bookState.getError(), Toast.LENGTH_SHORT).show()
     }
   }
 

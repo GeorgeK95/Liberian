@@ -4,14 +4,25 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.Icon
+import androidx.compose.material.Scaffold
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.stringResource
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
+import com.demo.android.librarian.R
 import com.demo.android.librarian.model.relations.BookReview
 import com.demo.android.librarian.repository.LibrarianRepository
 import com.demo.android.librarian.ui.bookReviewDetails.BookReviewDetailsActivity
+import com.demo.android.librarian.ui.composeUi.TopBar
+import com.demo.android.librarian.ui.reviews.ui.BookReviewsList
 import com.demo.android.librarian.utils.toast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -21,6 +32,7 @@ import javax.inject.Inject
  * Fetches and displays notes from the API.
  */
 
+
 private const val REQUEST_CODE_ADD_REVIEW = 202
 
 @AndroidEntryPoint
@@ -29,11 +41,7 @@ class BookReviewsFragment : Fragment() {
   @Inject
   lateinit var repository: LibrarianRepository
 
-  val bookReviewsState: LiveData<List<BookReview>> by lazy {
-    repository.getReviewsFlow().asLiveData(
-      lifecycleScope.coroutineContext
-    )
-  }
+  private val bookReviewsState = mutableStateOf(emptyList<BookReview>())
 
   private val addReviewContract by lazy {
     registerForActivityResult(AddBookReviewContract()) { isReviewAdded ->
@@ -50,11 +58,49 @@ class BookReviewsFragment : Fragment() {
     addReviewContract
 
     return ComposeView(requireContext()).apply {
-
+      setContent {
+        BookReviewsContent()
+      }
     }
   }
 
-  fun deleteReview(bookReview: BookReview) {
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    super.onViewCreated(view, savedInstanceState)
+
+    lifecycleScope.launch {
+      bookReviewsState.value = repository.getReviews()
+    }
+  }
+
+  @Composable
+  fun BookReviewsContent() {
+    Scaffold(
+      topBar = { BookReviewsTopBar() },
+      floatingActionButton = { AddBookReview() }
+    ) {
+      BookReviewsContentWrapper()
+    }
+  }
+
+  @Composable
+  fun BookReviewsTopBar() {
+    TopBar(title = stringResource(id = R.string.book_reviews_title))
+  }
+
+  @Composable
+  fun AddBookReview() {
+    FloatingActionButton(onClick = { startAddBookReview() }) {
+      Icon(imageVector = Icons.Default.Add, contentDescription = "Add Book Review")
+    }
+  }
+
+  @Composable
+  fun BookReviewsContentWrapper() {
+    val bookReviews = bookReviewsState.value
+    BookReviewsList(bookReviews, onItemClick = ::onItemSelected)
+  }
+
+  private fun deleteReview(bookReview: BookReview) {
     lifecycleScope.launch {
       repository.removeReview(bookReview.review)
     }

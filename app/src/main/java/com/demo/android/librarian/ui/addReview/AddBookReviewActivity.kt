@@ -6,28 +6,31 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.*
-import androidx.compose.ui.res.stringResource
-import com.demo.android.librarian.R
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
+import com.demo.android.librarian.R
 import com.demo.android.librarian.model.Review
+import com.demo.android.librarian.model.relations.BookAndGenre
 import com.demo.android.librarian.model.state.AddBookReviewState
 import com.demo.android.librarian.repository.LibrarianRepository
-import com.demo.android.librarian.ui.composeUi.ActionButton
-import com.demo.android.librarian.ui.composeUi.InputField
-import com.demo.android.librarian.ui.composeUi.TopBar
+import com.demo.android.librarian.ui.composeUi.*
+import com.demo.android.librarian.utils.EMPTY_BOOK_AND_GENRE
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.*
@@ -39,21 +42,39 @@ class AddBookReviewActivity : AppCompatActivity(), AddReviewView {
   @Inject
   lateinit var repository: LibrarianRepository
 
-  private val _bookReviewState = MutableLiveData(AddBookReviewState())
+  private val _bookReviewState = mutableStateOf(AddBookReviewState())
+  private val _books = mutableStateOf((emptyList<BookAndGenre>()))
 
   companion object {
     fun getIntent(context: Context) = Intent(context, AddBookReviewActivity::class.java)
   }
 
+  override fun onReviewAdded() {
+    setResult(RESULT_OK)
+    finish()
+  }
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContent { AddBookReviewContent() }
+    loadBooks()
   }
 
   @Composable
   fun AddBookReviewContent() {
-    Scaffold(topBar = { AddBookReviewTopBar() }) {
+    Scaffold(
+      topBar = { AddBookReviewTopBar() },
+      floatingActionButton = { AddBookReview() }) {
       AddBookReviewForm()
+    }
+  }
+
+  @Composable
+  fun AddBookReview() {
+    FloatingActionButton(onClick = {
+
+    }) {
+      Icon(imageVector = Icons.Default.Add, contentDescription = "Add Book Review")
     }
   }
 
@@ -69,6 +90,8 @@ class AddBookReviewActivity : AppCompatActivity(), AddReviewView {
   fun AddBookReviewForm() {
     val bookUrl = remember { mutableStateOf("") }
     val bookNotes = remember { mutableStateOf("") }
+    val currentRatingFilter = remember { mutableStateOf(0) }
+    val currentlySelectedBook = remember { mutableStateOf(EMPTY_BOOK_AND_GENRE) }
 
     Column(
       modifier = Modifier
@@ -85,7 +108,14 @@ class AddBookReviewActivity : AppCompatActivity(), AddReviewView {
 
       Spacer(modifier = Modifier.height(8.dp))
 
-      // TODO spinner
+      SpinnerPicker(
+        pickerText = currentlySelectedBook.value.book.name,
+        items = _books.value,
+        itemToName = { it.book.name },
+        onItemPicked = {
+          _bookReviewState.value = _bookReviewState.value.copy(bookAndGenre = it)
+        }
+      )
 
       Spacer(modifier = Modifier.height(8.dp))
 
@@ -93,14 +123,17 @@ class AddBookReviewActivity : AppCompatActivity(), AddReviewView {
         label = stringResource(id = R.string.book_image_url_input_hint),
         value = bookUrl.value,
         onStateChanged = { url ->
-          _bookReviewState.value = _bookReviewState.value?.copy(bookImageUrl = url)
+          _bookReviewState.value = _bookReviewState.value.copy(bookImageUrl = url)
           bookUrl.value = url
         }
       )
 
       Spacer(modifier = Modifier.height(16.dp))
 
-      // TODO rating bar
+      RatingBar(
+        range = 1..5,
+        isLargeRating = true,
+        onRatingChanged = { currentRatingFilter.value = it })
 
       Spacer(modifier = Modifier.height(16.dp))
 
@@ -108,7 +141,7 @@ class AddBookReviewActivity : AppCompatActivity(), AddReviewView {
         label = stringResource(id = R.string.review_notes_hint),
         value = bookNotes.value,
         onStateChanged = { notes ->
-          _bookReviewState.value = _bookReviewState.value?.copy(notes = notes)
+          _bookReviewState.value = _bookReviewState.value.copy(notes = notes)
           bookNotes.value = notes
         }
       )
@@ -126,7 +159,7 @@ class AddBookReviewActivity : AppCompatActivity(), AddReviewView {
     }
   }
 
-  fun addBookReview() {
+  private fun addBookReview() {
     val state = _bookReviewState.value ?: return
 
     lifecycleScope.launch {
@@ -151,8 +184,10 @@ class AddBookReviewActivity : AppCompatActivity(), AddReviewView {
     }
   }
 
-  override fun onReviewAdded() {
-    setResult(RESULT_OK)
-    finish()
+  private fun loadBooks() {
+    lifecycleScope.launch {
+      _books.value = repository.getBooks()
+    }
   }
+
 }
