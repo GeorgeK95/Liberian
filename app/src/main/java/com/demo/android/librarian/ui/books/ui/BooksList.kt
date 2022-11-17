@@ -1,6 +1,9 @@
 package com.demo.android.librarian.ui.books.ui
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,29 +18,38 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.demo.android.librarian.model.Book
 import com.demo.android.librarian.model.relations.BookAndGenre
 
 @Composable
 fun BooksList(
-  books: List<BookAndGenre>
+  books: List<BookAndGenre>,
+  onLongItemClick: (Book) -> Unit
 ) {
   LazyColumn(
     modifier = Modifier.padding(top = 16.dp),
     verticalArrangement = Arrangement.spacedBy(2.dp)
   ) {
     items(books) { bookAndGenre ->
-      BookListItem(bookAndGenre)
+      BookListItem(bookAndGenre, onLongItemClick)
     }
   }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun BookListItem(bookAndGenre: BookAndGenre) {
+fun BookListItem(bookAndGenre: BookAndGenre, onLongItemClick: (Book) -> Unit) {
   Card(
     modifier = Modifier
       .wrapContentHeight()
       .fillMaxWidth()
-      .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+      .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+      .combinedClickable(
+        interactionSource = MutableInteractionSource(),
+        indication = null,
+        onClick = {},
+        onLongClick = { onLongItemClick(bookAndGenre.book) }
+      ),
     elevation = 8.dp,
     border = BorderStroke(1.dp, MaterialTheme.colors.primary),
     shape = RoundedCornerShape(16.dp)

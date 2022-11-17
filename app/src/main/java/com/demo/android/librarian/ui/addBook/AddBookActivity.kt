@@ -103,7 +103,8 @@ class AddBookActivity : AppCompatActivity(), AddBookView {
           bookNameState.value = it
           _addBookState.value = _addBookState.value.copy(name = it)
         },
-        label = stringResource(id = R.string.book_title_hint)
+        label = stringResource(id = R.string.book_title_hint),
+        isInputValid = bookNameState.value.isNotEmpty()
       )
 
       InputField(
@@ -112,7 +113,8 @@ class AddBookActivity : AppCompatActivity(), AddBookView {
           bookDescState.value = it
           _addBookState.value = _addBookState.value.copy(description = it)
         },
-        label = stringResource(id = R.string.book_description_hint)
+        label = stringResource(id = R.string.book_description_hint),
+        isInputValid = bookDescState.value.isNotEmpty()
       )
 
       /*OutlinedTextField(

@@ -1,7 +1,8 @@
 package com.demo.android.librarian.ui.reviews.ui
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -28,17 +29,23 @@ import com.demo.android.librarian.ui.composeUi.RatingBar
 @Composable
 fun BookReviewsList(
   bookReviews: List<BookReview>,
-  onItemClick: (BookReview) -> Unit
+  onItemClick: (BookReview) -> Unit,
+  onItemLongClick: (BookReview) -> Unit
 ) {
   LazyColumn(modifier = Modifier.fillMaxSize()) {
     items(bookReviews) { bookReview ->
-      BookReviewItem(bookReview, onItemClick)
+      BookReviewItem(bookReview, onItemClick, onItemLongClick)
     }
   }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun BookReviewItem(bookReview: BookReview, onItemClick: (BookReview) -> Unit) {
+fun BookReviewItem(
+  bookReview: BookReview,
+  onItemClick: (BookReview) -> Unit,
+  onItemLongClick: (BookReview) -> Unit
+) {
   Card(
     elevation = 8.dp,
     border = BorderStroke(1.dp, MaterialTheme.colors.primary),
@@ -46,10 +53,12 @@ fun BookReviewItem(bookReview: BookReview, onItemClick: (BookReview) -> Unit) {
     modifier = Modifier
       .wrapContentHeight()
       .padding(16.dp)
-      .clickable(
+      .combinedClickable(
         interactionSource = MutableInteractionSource(),
         indication = null,
-        onClick = { onItemClick(bookReview) })
+        onClick = { onItemClick(bookReview) },
+        onLongClick = { onItemLongClick(bookReview) }
+      )
   ) {
     Row(modifier = Modifier.fillMaxSize()) {
 
