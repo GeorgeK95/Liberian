@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.*
@@ -34,6 +36,7 @@ import com.demo.android.librarian.ui.books.filter.Filter
 import com.demo.android.librarian.ui.books.ui.BookFilter
 import com.demo.android.librarian.ui.books.ui.BooksList
 import com.demo.android.librarian.ui.composeUi.DeleteDialog
+import com.demo.android.librarian.ui.composeUi.LibrarianTheme
 import com.demo.android.librarian.ui.composeUi.TopBar
 import com.demo.android.librarian.utils.toast
 import dagger.hilt.android.AndroidEntryPoint
@@ -46,14 +49,14 @@ private const val REQUEST_CODE_ADD_BOOK = 201
 @AndroidEntryPoint
 class BooksFragment : Fragment() {
 
-  private val addBookContract by lazy {
+  /*private val addBookContract by lazy {
     registerForActivityResult(AddBookContract()) { isBookCreated ->
       if (isBookCreated) {
         loadBooks()
         activity?.toast("Book added!")
       }
     }
-  }
+  }*/
 
   @Inject
   lateinit var repository: LibrarianRepository
@@ -63,16 +66,16 @@ class BooksFragment : Fragment() {
   private val _genresState = mutableStateOf<List<Genre>>(emptyList())
   var filter: Filter? = null
 
+  private var _addBookContract: ManagedActivityResultLauncher<Int, Boolean>? = null
+
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View {
-    addBookContract
+    /*addBookContract*/
 
     return ComposeView(requireContext()).apply {
-      setContent {
-        BooksContent()
-      }
+      setContent { LibrarianTheme { BooksContent() } }
     }
   }
 
@@ -84,6 +87,13 @@ class BooksFragment : Fragment() {
 
   @Composable
   fun BooksContent() {
+    _addBookContract = rememberLauncherForActivityResult(AddBookContract()) { isBookCreated ->
+      if (isBookCreated) {
+        loadBooks()
+        activity?.toast("Book added!")
+      }
+    }
+
     val drawerState = rememberBottomDrawerState(initialValue = BottomDrawerValue.Closed)
 
     Scaffold(
@@ -104,8 +114,7 @@ class BooksFragment : Fragment() {
       drawerState = drawerState
     ) {
       Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        modifier = Modifier.fillMaxSize()
       ) {
         val bookToDelete = _deleteBookState.value
 
@@ -211,6 +220,6 @@ class BooksFragment : Fragment() {
   }
 
   private fun showAddBook() {
-    addBookContract.launch(REQUEST_CODE_ADD_BOOK)
+    _addBookContract?.launch(REQUEST_CODE_ADD_BOOK)
   }
 }

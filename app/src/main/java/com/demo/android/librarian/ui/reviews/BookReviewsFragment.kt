@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.FloatingActionButton
@@ -24,6 +26,7 @@ import com.demo.android.librarian.model.relations.BookReview
 import com.demo.android.librarian.repository.LibrarianRepository
 import com.demo.android.librarian.ui.bookReviewDetails.BookReviewDetailsActivity
 import com.demo.android.librarian.ui.composeUi.DeleteDialog
+import com.demo.android.librarian.ui.composeUi.LibrarianTheme
 import com.demo.android.librarian.ui.composeUi.TopBar
 import com.demo.android.librarian.ui.reviews.ui.BookReviewsList
 import com.demo.android.librarian.utils.toast
@@ -47,24 +50,24 @@ class BookReviewsFragment : Fragment() {
   private val bookReviewsState = mutableStateOf(emptyList<BookReview>())
   private val _deleteReviewState = mutableStateOf<BookReview?>(null)
 
-  private val addReviewContract by lazy {
+  /*private val addReviewContract by lazy {
     registerForActivityResult(AddBookReviewContract()) { isReviewAdded ->
       if (isReviewAdded) {
         activity?.toast("Review added!")
       }
     }
-  }
+  }*/
+
+  private var _addReviewContract: ManagedActivityResultLauncher<Int, Boolean>? = null
 
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View {
-    addReviewContract
+    /*addReviewContract*/
 
     return ComposeView(requireContext()).apply {
-      setContent {
-        BookReviewsContent()
-      }
+      setContent { LibrarianTheme { BookReviewsContent() } }
     }
   }
 
@@ -100,6 +103,13 @@ class BookReviewsFragment : Fragment() {
 
   @Composable
   fun BookReviewsContentWrapper() {
+    _addReviewContract =
+      rememberLauncherForActivityResult(AddBookReviewContract()) { isReviewAdded ->
+        if (isReviewAdded) {
+          activity?.toast("Review added!")
+        }
+      }
+
     val bookReviews = bookReviewsState.value
 
     Box(
@@ -139,7 +149,7 @@ class BookReviewsFragment : Fragment() {
   }
 
   private fun startAddBookReview() {
-    addReviewContract.launch(REQUEST_CODE_ADD_REVIEW)
+    _addReviewContract?.launch(REQUEST_CODE_ADD_REVIEW)
   }
 
   private fun onItemSelected(item: BookReview) {

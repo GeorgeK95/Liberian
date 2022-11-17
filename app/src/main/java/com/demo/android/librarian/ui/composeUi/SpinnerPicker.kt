@@ -22,10 +22,12 @@ fun <T> SpinnerPicker(
   val isPickerExpanded = remember { mutableStateOf(false) }
   val pickedItem = remember { mutableStateOf(preselectedItem?.let(itemToName) ?: "") }
 
-  Row(modifier = Modifier
-    .wrapContentWidth()
-    .padding(start = 16.dp, end = 16.dp),
-    verticalAlignment = Alignment.CenterVertically) {
+  Row(
+    modifier = Modifier
+      .wrapContentWidth()
+      .padding(start = 16.dp, end = 16.dp),
+    verticalAlignment = Alignment.CenterVertically
+  ) {
     DropdownMenuButton(text = pickerText) {
       isPickerExpanded.value = true
     }

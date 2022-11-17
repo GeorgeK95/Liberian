@@ -36,6 +36,7 @@ import com.demo.android.librarian.model.ReadingEntry
 import com.demo.android.librarian.model.Review
 import com.demo.android.librarian.model.relations.BookReview
 import com.demo.android.librarian.repository.LibrarianRepository
+import com.demo.android.librarian.ui.composeUi.LibrarianTheme
 import com.demo.android.librarian.ui.composeUi.RatingBar
 import com.demo.android.librarian.ui.composeUi.TopBar
 import com.demo.android.librarian.utils.EMPTY_BOOK_AND_GENRE
@@ -80,7 +81,7 @@ class BookReviewDetailsActivity : AppCompatActivity() {
     }
 
     setReview(data)
-    setContent { BookReviewDetailsContent() }
+    setContent { LibrarianTheme { BookReviewDetailsContent() } }
   }
 
   @Composable
@@ -134,12 +135,17 @@ class BookReviewDetailsActivity : AppCompatActivity() {
       Text(
         text = bookReview.book.name,
         fontWeight = FontWeight.Bold,
-        fontSize = 18.sp
+        fontSize = 18.sp,
+        color = MaterialTheme.colors.onPrimary
       )
 
       Spacer(modifier = Modifier.height(6.dp))
 
-      Text(text = genre.name, fontSize = 12.sp)
+      Text(
+        text = genre.name,
+        fontSize = 12.sp,
+        color = MaterialTheme.colors.onPrimary
+      )
 
       Spacer(modifier = Modifier.height(6.dp))
 
@@ -160,7 +166,8 @@ class BookReviewDetailsActivity : AppCompatActivity() {
           id =
           R.string.last_updated_date, formatDateToText(bookReview.review.lastUpdatedDate)
         ),
-        fontSize = 12.sp
+        fontSize = 12.sp,
+        color = MaterialTheme.colors.onPrimary
       )
 
       Spacer(modifier = Modifier.height(8.dp))
@@ -176,7 +183,8 @@ class BookReviewDetailsActivity : AppCompatActivity() {
         modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 8.dp),
         text = bookReview.review.notes,
         fontSize = 12.sp,
-        fontStyle = FontStyle.Italic
+        fontStyle = FontStyle.Italic,
+        color = MaterialTheme.colors.onPrimary
       )
 
       Spacer(

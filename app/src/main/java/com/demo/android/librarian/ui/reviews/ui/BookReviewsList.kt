@@ -82,7 +82,10 @@ fun BookReviewItem(
         Spacer(modifier = Modifier.height(8.dp))
 
         Row {
-          Text(text = stringResource(id = R.string.rating_text))
+          Text(
+            text = stringResource(id = R.string.rating_text),
+            color = MaterialTheme.colors.onPrimary
+          )
 
           RatingBar(
             modifier = Modifier.align(CenterVertically),
@@ -97,7 +100,8 @@ fun BookReviewItem(
           text = stringResource(
             id = R.string.number_of_reading_entries,
             bookReview.review.entries.size
-          )
+          ),
+          color = MaterialTheme.colors.onPrimary
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -108,7 +112,8 @@ fun BookReviewItem(
           modifier = Modifier.fillMaxSize(),
           overflow = TextOverflow.Ellipsis,
           fontStyle = FontStyle.Italic,
-          maxLines = 4
+          maxLines = 4,
+          color = MaterialTheme.colors.onPrimary
         )
 
         Spacer(modifier = Modifier.height(16.dp))

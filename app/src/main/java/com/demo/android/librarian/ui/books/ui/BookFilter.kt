@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.RadioButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -58,7 +59,8 @@ fun BookFilter(
 
         Text(
           text = stringResource(id = R.string.no_filter),
-          modifier = Modifier.align(CenterVertically)
+          modifier = Modifier.align(CenterVertically),
+          color = MaterialTheme.colors.onPrimary
         )
       }
 
@@ -71,7 +73,8 @@ fun BookFilter(
 
         Text(
           text = stringResource(id = R.string.filter_by_genre),
-          modifier = Modifier.align(CenterVertically)
+          modifier = Modifier.align(CenterVertically),
+          color = MaterialTheme.colors.onPrimary
         )
       }
 
@@ -84,7 +87,8 @@ fun BookFilter(
 
         Text(
           text = stringResource(id = R.string.filter_by_rating),
-          modifier = Modifier.align(CenterVertically)
+          modifier = Modifier.align(CenterVertically),
+          color = MaterialTheme.colors.onPrimary
         )
       }
     }

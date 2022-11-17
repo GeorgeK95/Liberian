@@ -8,10 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.Icon
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
@@ -56,7 +53,7 @@ class AddBookReviewActivity : AppCompatActivity(), AddReviewView {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContent { AddBookReviewContent() }
+    setContent { LibrarianTheme { AddBookReviewContent() } }
     loadBooks()
   }
 
@@ -103,7 +100,8 @@ class AddBookReviewActivity : AppCompatActivity(), AddReviewView {
       Text(
         text = stringResource(id = R.string.book_picker_hint),
         fontSize = 18.sp,
-        fontWeight = FontWeight.Bold
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colors.onPrimary
       )
 
       Spacer(modifier = Modifier.height(8.dp))
@@ -135,7 +133,7 @@ class AddBookReviewActivity : AppCompatActivity(), AddReviewView {
         range = 1..5,
         isLargeRating = true,
         onRatingChanged = {
-        _bookReviewState.value = _bookReviewState.value.copy(rating = it)
+          _bookReviewState.value = _bookReviewState.value.copy(rating = it)
           currentRatingFilter.value = it
         })
 

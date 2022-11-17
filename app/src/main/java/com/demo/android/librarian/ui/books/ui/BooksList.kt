@@ -72,7 +72,8 @@ fun BookListItem(bookAndGenre: BookAndGenre, onLongItemClick: (Book) -> Unit) {
         Text(
           text = bookAndGenre.genre.name,
           fontSize = 16.sp,
-          fontStyle = FontStyle.Italic
+          fontStyle = FontStyle.Italic,
+          color = MaterialTheme.colors.onPrimary
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -84,7 +85,8 @@ fun BookListItem(bookAndGenre: BookAndGenre, onLongItemClick: (Book) -> Unit) {
           fontStyle = FontStyle.Italic,
           modifier = Modifier
             .fillMaxHeight()
-            .padding(end = 16.dp)
+            .padding(end = 16.dp),
+          color = MaterialTheme.colors.onPrimary
         )
         Spacer(modifier = Modifier.height(16.dp))
       }

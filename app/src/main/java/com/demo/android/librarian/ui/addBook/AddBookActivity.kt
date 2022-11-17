@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -23,10 +24,7 @@ import com.demo.android.librarian.model.Book
 import com.demo.android.librarian.model.Genre
 import com.demo.android.librarian.model.state.AddBookState
 import com.demo.android.librarian.repository.LibrarianRepository
-import com.demo.android.librarian.ui.composeUi.ActionButton
-import com.demo.android.librarian.ui.composeUi.InputField
-import com.demo.android.librarian.ui.composeUi.SpinnerPicker
-import com.demo.android.librarian.ui.composeUi.TopBar
+import com.demo.android.librarian.ui.composeUi.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -46,7 +44,7 @@ class AddBookActivity : AppCompatActivity(), AddBookView {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContent { AddBookContent() }
+    setContent { LibrarianTheme { AddBookContent() } }
     loadGenres()
   }
 
@@ -173,6 +171,7 @@ class AddBookActivity : AppCompatActivity(), AddBookView {
       }*/
 
       ActionButton(
+        modifier = Modifier.fillMaxWidth(),
         text = stringResource(id = R.string.add_book_button_text),
         isEnabled = isButtonEnabled.value,
         onClick = { onAddBookTapped() }

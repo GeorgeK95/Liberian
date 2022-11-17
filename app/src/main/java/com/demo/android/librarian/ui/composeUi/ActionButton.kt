@@ -24,13 +24,14 @@ fun ActionButton(
   onClick: () -> Unit
 ) {
   val backgroundColor = if (isEnabled) enabledColor else Color.LightGray
+  val contentColor = if (isEnabled) MaterialTheme.colors.onSecondary else disabledTextColor
 
   TextButton(
     shape = RoundedCornerShape(16.dp),
     enabled = isEnabled,
     colors = ButtonDefaults.textButtonColors(
       backgroundColor = backgroundColor,
-      contentColor = MaterialTheme.colors.onSecondary,
+      contentColor = contentColor,
       disabledContentColor = disabledTextColor
     ),
     modifier = modifier.padding(16.dp),

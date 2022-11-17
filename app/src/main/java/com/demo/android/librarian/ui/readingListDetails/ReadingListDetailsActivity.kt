@@ -48,14 +48,14 @@ class ReadingListDetailsActivity : AppCompatActivity() {
     }
   }
 
-  fun setReadingList(readingListsWithBooks: ReadingListsWithBooks) {
+  private fun setReadingList(readingListsWithBooks: ReadingListsWithBooks) {
     readingListState = repository.getReadingListById(readingListsWithBooks.id)
       .asLiveData(lifecycleScope.coroutineContext)
 
     refreshBooks()
   }
 
-  fun refreshBooks() {
+  private fun refreshBooks() {
     lifecycleScope.launch {
       val books = repository.getBooks()
       val readingListBooks = readingListState.value?.books?.map { it.book.id } ?: emptyList()
@@ -66,7 +66,7 @@ class ReadingListDetailsActivity : AppCompatActivity() {
     }
   }
 
-  fun addBookToReadingList(bookId: String?) {
+  private fun addBookToReadingList(bookId: String?) {
     val data = readingListState.value
 
     if (data != null && bookId != null) {
@@ -82,7 +82,7 @@ class ReadingListDetailsActivity : AppCompatActivity() {
     }
   }
 
-  fun removeBookFromReadingList(bookId: String) {
+  private fun removeBookFromReadingList(bookId: String) {
     val data = readingListState.value
 
     if (data != null) {
