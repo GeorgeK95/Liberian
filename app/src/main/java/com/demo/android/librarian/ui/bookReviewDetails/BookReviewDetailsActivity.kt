@@ -8,16 +8,18 @@ import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
@@ -27,19 +29,17 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import coil.compose.AsyncImage
 import com.demo.android.librarian.R
-import com.demo.android.librarian.model.Genre
 import com.demo.android.librarian.model.ReadingEntry
 import com.demo.android.librarian.model.Review
 import com.demo.android.librarian.model.relations.BookReview
 import com.demo.android.librarian.repository.LibrarianRepository
+import com.demo.android.librarian.ui.bookReviewDetails.anim.*
 import com.demo.android.librarian.ui.composeUi.LibrarianTheme
 import com.demo.android.librarian.ui.composeUi.RatingBar
 import com.demo.android.librarian.ui.composeUi.TopBar
-import com.demo.android.librarian.utils.EMPTY_BOOK_AND_GENRE
 import com.demo.android.librarian.utils.EMPTY_BOOK_REVIEW
 import com.demo.android.librarian.utils.EMPTY_GENRE
 import com.demo.android.librarian.utils.formatDateToText
@@ -55,6 +55,8 @@ class BookReviewDetailsActivity : AppCompatActivity() {
   lateinit var repository: LibrarianRepository
   private val _bookReviewDetailsState = mutableStateOf(EMPTY_BOOK_REVIEW)
   private val _genreState = mutableStateOf(EMPTY_GENRE)
+  private val _isShowingAddEntryState = mutableStateOf(false)
+  private val _screenState = mutableStateOf<BookReviewDetailsScreenState>(Initial)
 
   companion object {
     private const val KEY_BOOK_REVIEW = "book_review"
@@ -86,9 +88,14 @@ class BookReviewDetailsActivity : AppCompatActivity() {
 
   @Composable
   fun BookReviewDetailsContent() {
+    val animationState by _screenState
+    val state = animateBookReviewDetails(screenState = animationState)
+
+    LaunchedEffect(Unit, block = { _screenState.value = Loaded })
+
     Scaffold(topBar = { BookReviewDetailsTopBar() },
-      floatingActionButton = { AddReadingEntry() }) {
-      BookReviewDetailsInformation()
+      floatingActionButton = { AddReadingEntry(state) }) {
+      BookReviewDetailsInformation(state)
     }
   }
 
@@ -100,14 +107,16 @@ class BookReviewDetailsActivity : AppCompatActivity() {
   }
 
   @Composable
-  fun AddReadingEntry() {
-    FloatingActionButton(onClick = { }) {
+  fun AddReadingEntry(state: BookReviewDetailsTransitionState) {
+    FloatingActionButton(
+      modifier = Modifier.size(state.floatingButtonSize),
+      onClick = { }) {
       Icon(imageVector = Icons.Default.Add, contentDescription = "Add Reading Entry")
     }
   }
 
   @Composable
-  fun BookReviewDetailsInformation() {
+  fun BookReviewDetailsInformation(state: BookReviewDetailsTransitionState) {
     val bookReview = _bookReviewDetailsState.value
     val genre = _genreState.value
 
@@ -115,7 +124,7 @@ class BookReviewDetailsActivity : AppCompatActivity() {
       modifier = Modifier.fillMaxSize(),
       horizontalAlignment = Alignment.CenterHorizontally
     ) {
-      Spacer(modifier = Modifier.height(16.dp))
+      Spacer(modifier = Modifier.height(state.imageMarginTop))
 
       Card(
         modifier = Modifier.size(200.dp, 300.dp),
@@ -130,7 +139,7 @@ class BookReviewDetailsActivity : AppCompatActivity() {
         )
       }
 
-      Spacer(modifier = Modifier.height(16.dp))
+      Spacer(modifier = Modifier.height(state.titleMarginTop))
 
       Text(
         text = bookReview.book.name,
@@ -139,15 +148,16 @@ class BookReviewDetailsActivity : AppCompatActivity() {
         color = MaterialTheme.colors.onPrimary
       )
 
-      Spacer(modifier = Modifier.height(6.dp))
+      Spacer(modifier = Modifier.height(state.contentMarginTop))
 
       Text(
         text = genre.name,
         fontSize = 12.sp,
-        color = MaterialTheme.colors.onPrimary
+        color = MaterialTheme.colors.onPrimary,
+        modifier = Modifier.alpha(state.contentAlpha),
       )
 
-      Spacer(modifier = Modifier.height(6.dp))
+      Spacer(modifier = Modifier.height(state.contentMarginTop))
 
       RatingBar(
         modifier = Modifier.align(CenterHorizontally),
@@ -158,7 +168,7 @@ class BookReviewDetailsActivity : AppCompatActivity() {
         onRatingChanged = {}
       )
 
-      Spacer(modifier = Modifier.height(6.dp))
+      Spacer(modifier = Modifier.height(state.contentMarginTop))
 
       Text(
         text =
@@ -167,7 +177,8 @@ class BookReviewDetailsActivity : AppCompatActivity() {
           R.string.last_updated_date, formatDateToText(bookReview.review.lastUpdatedDate)
         ),
         fontSize = 12.sp,
-        color = MaterialTheme.colors.onPrimary
+        color = MaterialTheme.colors.onPrimary,
+        modifier = Modifier.alpha(state.contentAlpha),
       )
 
       Spacer(modifier = Modifier.height(8.dp))
@@ -180,7 +191,9 @@ class BookReviewDetailsActivity : AppCompatActivity() {
       )
 
       Text(
-        modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 8.dp),
+        modifier = Modifier
+          .padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 8.dp)
+          .alpha(state.contentAlpha),
         text = bookReview.review.notes,
         fontSize = 12.sp,
         fontStyle = FontStyle.Italic,
