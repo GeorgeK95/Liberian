@@ -16,10 +16,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -44,6 +42,9 @@ class ReadingListDetailsActivity : AppCompatActivity() {
 //  private var readingListState: LiveData<ReadingListsWithBooks> = MutableLiveData()
 
   private val readingListDetailsViewModel by viewModels<ReadingListDetailsViewModel>()
+  private val LocalReadingList = compositionLocalOf<ReadingListsWithBooks?> {
+    error("No reading list!")
+  }
 
   companion object {
     private const val KEY_READING_LIST = "reading_list"
@@ -81,11 +82,13 @@ class ReadingListDetailsActivity : AppCompatActivity() {
     val readingListState by readingListDetailsViewModel.readingListState.observeAsState()
     val bottomDrawerState = rememberBottomDrawerState(initialValue = BottomDrawerValue.Closed)
 
-    Scaffold(
-      topBar = { ReadingListDetailsTopBar(readingListState) },
-      floatingActionButton = { AddBookToReadingList(bottomDrawerState) }
-    ) {
-      ReadingListDetailsModalDrawer(bottomDrawerState, readingListState)
+    CompositionLocalProvider(LocalReadingList provides readingListState) {
+      Scaffold(
+        topBar = { ReadingListDetailsTopBar(/*readingListState*/) },
+        floatingActionButton = { AddBookToReadingList(bottomDrawerState) }
+      ) {
+        ReadingListDetailsModalDrawer(bottomDrawerState, /*readingListState*/)
+      }
     }
   }
 
@@ -112,7 +115,9 @@ class ReadingListDetailsActivity : AppCompatActivity() {
   }
 
   @Composable
-  fun ReadingListDetailsTopBar(readingList: ReadingListsWithBooks?) {
+  fun ReadingListDetailsTopBar(/*readingList: ReadingListsWithBooks?*/) {
+    val readingList = LocalReadingList.current
+
     val title = readingList?.name ?: stringResource(id = R.string.reading_list)
 
     TopBar(title = title, onBackPressed = { onBackPressed() })
@@ -123,8 +128,10 @@ class ReadingListDetailsActivity : AppCompatActivity() {
   @Composable
   fun ReadingListDetailsModalDrawer(
     drawerState: BottomDrawerState,
-    readingList: ReadingListsWithBooks?
+    /*readingList: ReadingListsWithBooks?*/
   ) {
+    val readingList = LocalReadingList.current
+
     val deleteBookState by readingListDetailsViewModel.deleteBookState.observeAsState()
     val addBookState by readingListDetailsViewModel.addBookState.observeAsState(emptyList())
 
