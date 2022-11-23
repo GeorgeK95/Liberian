@@ -14,17 +14,23 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.demo.android.librarian.R
 import com.demo.android.librarian.model.relations.BookReview
 import com.demo.android.librarian.repository.LibrarianRepository
 import com.demo.android.librarian.ui.bookReviewDetails.BookReviewDetailsActivity
+import com.demo.android.librarian.ui.bookReviewDetails.BookReviewDetailsViewModel
 import com.demo.android.librarian.ui.composeUi.DeleteDialog
 import com.demo.android.librarian.ui.composeUi.LibrarianTheme
 import com.demo.android.librarian.ui.composeUi.TopBar
@@ -44,11 +50,14 @@ private const val REQUEST_CODE_ADD_REVIEW = 202
 @AndroidEntryPoint
 class BookReviewsFragment : Fragment() {
 
-  @Inject
-  lateinit var repository: LibrarianRepository
+//  @Inject
+//  lateinit var repository: LibrarianRepository
 
-  private val bookReviewsState = mutableStateOf(emptyList<BookReview>())
-  private val _deleteReviewState = mutableStateOf<BookReview?>(null)
+//  private val bookReviewsState = mutableStateOf(emptyList<BookReview>())
+
+  private val viewModel by viewModels<BookReviewsViewModel>()
+
+//  private val _deleteReviewState = mutableStateOf<BookReview?>(null)
 
   /*private val addReviewContract by lazy {
     registerForActivityResult(AddBookReviewContract()) { isReviewAdded ->
@@ -71,13 +80,13 @@ class BookReviewsFragment : Fragment() {
     }
   }
 
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+  /*override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
 
     lifecycleScope.launch {
       bookReviewsState.value = repository.getReviews()
     }
-  }
+  }*/
 
   @Composable
   fun BookReviewsContent() {
@@ -110,19 +119,27 @@ class BookReviewsFragment : Fragment() {
         }
       }
 
-    val bookReviews = bookReviewsState.value
+//    val bookReviews = viewModel.bookReviewsState.value
+
+    val bookReviews by viewModel.bookReviewsState.observeAsState(emptyList())
+    val deleteReviewState by viewModel.deleteReviewState.observeAsState()
+
+    val reviewToDelete = deleteReviewState
 
     Box(
       modifier = Modifier.fillMaxSize(),
       contentAlignment = Alignment.Center
     ) {
 
-      val reviewToDelete = _deleteReviewState.value
+//      val reviewToDelete = _deleteReviewState.value
 
       BookReviewsList(
         bookReviews,
         onItemClick = ::onItemSelected,
-        onItemLongClick = { _deleteReviewState.value = it }
+        onItemLongClick = {
+//          _deleteReviewState.value = it
+          viewModel.onItemLongTapped(it)
+        }
       )
 
       if (reviewToDelete != null) {
@@ -130,23 +147,24 @@ class BookReviewsFragment : Fragment() {
           item = reviewToDelete,
           message = stringResource(id = R.string.delete_review_message, reviewToDelete.book.name),
           onDeleteItem = { bookReview ->
-            deleteReview(bookReview)
-            _deleteReviewState.value = null
+//            viewModel.removeReadingEntry(bookReview)
+            viewModel.deleteReview(bookReview)
           },
           onDismiss = {
-            _deleteReviewState.value = null
+//            _deleteReviewState.value = null
+            viewModel.onDialogDismissed()
           }
         )
       }
     }
   }
 
-  private fun deleteReview(bookReview: BookReview) {
-    lifecycleScope.launch {
-      repository.removeReview(bookReview.review)
-      bookReviewsState.value = repository.getReviews()
-    }
-  }
+//  private fun deleteReview(bookReview: BookReview) {
+//    lifecycleScope.launch {
+//      repository.removeReview(bookReview.review)
+//      bookReviewsState.value = repository.getReviews()
+//    }
+//  }
 
   private fun startAddBookReview() {
     _addReviewContract?.launch(REQUEST_CODE_ADD_REVIEW)

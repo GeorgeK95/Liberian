@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,11 +33,13 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class AddBookActivity : AppCompatActivity(), AddBookView {
 
-  private val _addBookState = mutableStateOf(AddBookState())
-  private val _genresState = MutableLiveData(emptyList<Genre>())
+//  private val _addBookState = mutableStateOf(AddBookState())
+//  private val _genresState = MutableLiveData(emptyList<Genre>())
+//
+//  @Inject
+//  lateinit var repository: LibrarianRepository
 
-  @Inject
-  lateinit var repository: LibrarianRepository
+  private val viewModel by viewModels<AddBookViewModel>()
 
   companion object {
     fun getIntent(context: Context): Intent = Intent(context, AddBookActivity::class.java)
@@ -45,7 +48,9 @@ class AddBookActivity : AppCompatActivity(), AddBookView {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContent { LibrarianTheme { AddBookContent() } }
-    loadGenres()
+//    loadGenres()
+    viewModel.setView(this)
+    viewModel.loadGenres()
   }
 
   override fun onBookAdded() {
@@ -82,14 +87,17 @@ class AddBookActivity : AppCompatActivity(), AddBookView {
 
   @Composable
   fun AddBookFormContent() {
-    val genres = _genresState.value ?: emptyList()
+    val genres = viewModel.genresState.value ?: emptyList()
+//    val genres = _genresState.value ?: emptyList()
 //    val isGenresPickerOpen = remember { mutableStateOf(false) }
     val bookNameState = remember { mutableStateOf("") }
     val bookDescState = remember { mutableStateOf("") }
     val selectedGenreName =
-      genres.firstOrNull { it.id == _addBookState.value.genreId }?.name ?: "None"
+//      genres.firstOrNull { it.id == _addBookState.value.genreId }?.name ?: "None"
+      genres.firstOrNull { it.id == viewModel.addBookState.value?.genreId }?.name ?: "None"
 
-    val isButtonEnabled = derivedStateOf { (_addBookState.value.getError() == null) }
+//    val isButtonEnabled = derivedStateOf { (_addBookState.value.getError() == null) }
+    val isButtonEnabled = derivedStateOf { (viewModel.addBookState.value?.getError() == null) }
 
     Column(
       modifier = Modifier.fillMaxSize(),
@@ -99,7 +107,8 @@ class AddBookActivity : AppCompatActivity(), AddBookView {
         value = bookNameState.value,
         onStateChanged = {
           bookNameState.value = it
-          _addBookState.value = _addBookState.value.copy(name = it)
+//          _addBookState.value = _addBookState.value.copy(name = it)
+          viewModel.onNameChanged(it)
         },
         label = stringResource(id = R.string.book_title_hint),
         isInputValid = bookNameState.value.isNotEmpty()
@@ -109,7 +118,8 @@ class AddBookActivity : AppCompatActivity(), AddBookView {
         value = bookDescState.value,
         onStateChanged = {
           bookDescState.value = it
-          _addBookState.value = _addBookState.value.copy(description = it)
+//          _addBookState.value = _addBookState.value.copy(description = it)
+          viewModel.onDescriptionChanged(it)
         },
         label = stringResource(id = R.string.book_description_hint),
         isInputValid = bookDescState.value.isNotEmpty()
@@ -138,7 +148,8 @@ class AddBookActivity : AppCompatActivity(), AddBookView {
         items = genres,
         itemToName = { currentGenre -> currentGenre.name },
         onItemPicked = {
-          _addBookState.value = _addBookState.value.copy(genreId = it.id)
+//          _addBookState.value = _addBookState.value.copy(genreId = it.id)
+          viewModel.genrePicked(it)
         }
       )
 
@@ -174,7 +185,7 @@ class AddBookActivity : AppCompatActivity(), AddBookView {
         modifier = Modifier.fillMaxWidth(),
         text = stringResource(id = R.string.add_book_button_text),
         isEnabled = isButtonEnabled.value,
-        onClick = { onAddBookTapped() }
+        onClick = { viewModel.onAddBookTapped() }
       )
       /*TextButton(onClick = { onAddBookTapped() }) {
         Text(text = stringResource(id = R.string.add_book_button_text))
@@ -182,33 +193,35 @@ class AddBookActivity : AppCompatActivity(), AddBookView {
     }
   }
 
-  private fun onAddBookTapped() {
-    val bookState = _addBookState.value ?: return
+  /*private fun onAddBookTapped() {
+//    val bookState = _addBookState.value ?: return
+    val bookState = viewModel.addBookState.value ?: return
 
     if (bookState.name.isNotEmpty() &&
       bookState.description.isNotEmpty() &&
       bookState.genreId.isNotEmpty()
     ) {
       lifecycleScope.launch {
-        repository.addBook(
+        viewModel.onAddBookTapped()
+        *//*repository.addBook(
           Book(
             name = bookState.name,
             description = bookState.description,
             genreId = bookState.genreId
           )
-        )
+        )*//*
 
         onBookAdded()
       }
     } else {
       Toast.makeText(this, bookState.getError(), Toast.LENGTH_SHORT).show()
     }
-  }
+  }*/
 
-  private fun loadGenres() {
+  /*private fun loadGenres() {
     lifecycleScope.launch {
       _genresState.value = repository.getGenres()
     }
-  }
+  }*/
 
 }
